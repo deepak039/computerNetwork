@@ -110,3 +110,58 @@ The Internet is a complex, layered system of networks that connects end hosts th
 ### Further Reading:
 - [The design philosophy of the DARPA Internet protocols](https://www.cl.cam.ac.uk/teaching/2020/Resilience/papers/clark88.pdf) by David Clark
 
+To model the performance of computer networks, we need to consider several key aspects such as throughput, end-to-end delay, packetization, and the differences between circuit switching and packet switching. Additionally, understanding the bandwidth-delay product and insights from queuing theory are essential for evaluating network performance.
+
+### Key Concepts in Network Performance Modeling:
+
+#### 1. **Throughput vs. Delay**
+   - **Throughput** refers to how many bits per second are transmitted through the network. It can be thought of as the width of a pipe through which data flows.
+   - **End-to-End Delay** represents the total time it takes for a bit to travel from the source to the destination. It’s analogous to the length of the pipe.
+   - These two metrics are largely orthogonal: throughput measures capacity, while delay measures latency.
+
+#### 2. **Throughput**
+   - **Link Bandwidth** and **Datarate** represent the nominal rate at which data can be transmitted over a link.
+   - **Goodput** (or throughput) represents the actual number of useful bits received at the destination, excluding retransmissions and errors.
+   - The overall throughput of a connection across multiple links is determined by the slowest link, known as the **bottleneck link**.
+   - If the sender exceeds the bottleneck link's capacity, a queue will form at the router connected to that link.
+
+#### 3. **Bottleneck Dynamics**
+   - The bottleneck isn’t always the slowest nominal datarate; a high-speed link might still become a bottleneck if multiple flows share it.
+   - Protocol-induced delays (e.g., waiting for acknowledgments) can further reduce the average throughput.
+   - **Example Problem:**
+     - A 125 KB file sent over a network with a bottleneck bandwidth of 1 Mbps would take 1 second to transfer. However, if acknowledgments are required after each 1 KB packet with a 40 ms round trip time (RTT), the effective throughput reduces to 200 kbps, increasing the total transfer time to 5 seconds.
+
+#### 4. **Delay Components**
+   - **Transmission Delay:** The time to put all bits of a packet onto the wire (depends on link bandwidth).
+   - **Propagation Delay:** The time for bits to travel through the medium (depends on the physical distance and the speed of wave propagation).
+   - **Processing Delay:** The time to process the packet at the intermediate nodes (usually small with modern hardware).
+   - **Queuing Delay:** The waiting time when packets are queued before transmission. This can vary based on network conditions and traffic.
+
+   **Example:**
+   - Consider a network where data travels between A and B with an intermediary switch S, each link 200 meters in length with a speed of 1 Mbps. The total propagation delay per link is 1 microsecond. The total end-to-end delay for a 125-byte packet would be approximately 2020 microseconds.
+
+#### 5. **Packetization**
+   - Breaking large data transfers into smaller packets can reduce total end-to-end delay, particularly in store-and-forward networks.
+   - **Example:** Sending a 1 MB file over two 1 Mbps links. Sending it as a single large packet would take 16 seconds, while splitting it into 100-byte chunks would reduce the transfer time to 10.001 seconds, even accounting for the overhead of packet headers.
+
+#### 6. **Circuit Switching vs. Packet Switching**
+   - **Circuit Switching (CS):** Reserves a dedicated path between the source and destination for the entire duration of the transfer. Setup messages must be sent before data transmission begins.
+   - **Packet Switching (PS):** Data is split into packets and routed independently across the network. This method is more efficient for bursty traffic but incurs higher delays due to packetization and routing.
+   - **Example Comparison:** Transferring a 1 MB file using CS takes approximately 8.04 seconds, while using PS takes about 10.001 seconds, with more bytes sent in PS due to header overheads.
+
+#### 7. **Queuing Theory**
+   - **M/M/1 Queueing System:** Models packet arrivals as a Poisson process, with service times exponentially distributed. The system’s utilization is defined as ρ = λ/μ, where λ is the arrival rate, and μ is the service rate.
+   - **Little’s Law:** The average number of customers in the system (N) is related to the arrival rate and average time in the system by N = λT.
+
+   **Example:**
+   - When traffic approaches the capacity of the link (i.e., L/R ≈ 1), queuing delays can grow disproportionately, leading to packet losses when queues fill up.
+
+#### 8. **Bandwidth-Delay Product (BDP)**
+   - The BDP measures how much data can be "in-flight" in the network at any time. It’s calculated as the product of the bandwidth and the round-trip time (RTT).
+   - **Example:** For a 1 Mbps link with a 20 ms RTT, the BDP is 20,000 bits, or 2.5 KB. This means that a sender can have 2.5 packets in flight before receiving an acknowledgment.
+
+#### 9. **Understanding BDP and TCP**
+   - BDP helps in optimizing TCP performance by maintaining a window size equal to the BDP to fully utilize the link without waiting for acknowledgments unnecessarily.
+   - **Example:** A 1 KB packet on a 1 Mbps link with a 20 ms RTT achieves an average throughput of 400 kbps when waiting for ACKs, demonstrating the importance of managing the in-flight data effectively.
+
+By considering these factors, network performance can be analyzed and optimized for different conditions, such as traffic patterns, delays, and protocols in use.
